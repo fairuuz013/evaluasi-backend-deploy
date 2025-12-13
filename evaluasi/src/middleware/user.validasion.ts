@@ -22,12 +22,12 @@ export const validate = (validations: ValidationChain[]) => {
 
 
 export const createUserValidation = [
-  body('nama')
+  body('name')
     .trim()
     .notEmpty().withMessage('Nama buku wajib diisi')
     .isLength({ min: 3 }).withMessage('Nama Judul user minimal 3 karakter'),
   
-  body('asal')
+  body('city')
     .trim()
     .notEmpty().withMessage('asal wajib diisi'),
   

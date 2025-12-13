@@ -1,91 +1,173 @@
-import type { Request, Response } from "express";
-import { errorResponse, successResponse } from "../utils/response";
-import { createUser, deleteUser, getAllUsers, getUserById, searchUsers, updateUser } from "../services/user.services";
+import  type { Request, Response } from "express";
+import * as userService from "../services/user.services";
 
 
+// ==================================================
+// Response Helpers
+// ==================================================
 
-// GET ALL
-export const getAll = (_req: Request, res: Response ) => {
-    const { users, total } = getAllUsers()
-    successResponse(
-        res, "data pengunjung perpustakaan",
-        
-        {
-            jumlah: total,
-            data: users
-        }
-    )
+const success = (
+  res: Response,
+  data: any,
+  message: string = "OK",
+  status: number = 200
+) => {
+  return res.status(status).json({
+    success: true,
+    message,
+    data,
+  });
+};
 
-}
-
-// GET BY ID 
-export const getById = (req: Request, res: Response) => {
-    if (!req.params.id) {
-        return errorResponse(
-            res,
-            "No parameter sir"
-        )
-    }
-    const user = getUserById(req.params.id!,)
-
-    successResponse(
-        res, "user found men",
-        user
-    )
-}
-
-// GET BY SEARCH 
-export const search = (req: Request, res: Response) => {
-  const { nama, asal } = req.query;
-
-  
-  const result = searchUsers((nama as string)?.toString(), asal?.toString());
-
-  return successResponse(res, "User found", result);
+const error = (
+  res: Response,
+  message: string = "Terjadi kesalahan",
+  status: number = 500
+) => {
+  return res.status(status).json({
+    success: false,
+    message,
+  });
 };
 
 
+// ==================================================
+// GET ALL USERS
+// ==================================================
+export const getAllUsersController = async (
+  _req: Request,
+  res: Response
+) => {
+  try {
+    const { users, total } = await userService.getAllUsers();
 
-export const create = (req: Request, res: Response) => {
-    const { nama, asal, age } = req.body;
-
-    const users = createUser(nama,
-        asal, age
-    )
-
-    
-    successResponse(
-        res,
-        "buki berasil di tambah",
-        users,
-        null,
-        201
-    )
-}
-
-
-
-export const update = (req: Request, res: Response) => {
-   
-    const user = updateUser(req.params.id!, req.body,)
-    
-    
-  successResponse(
-    res, 
-    "update user",
-    user
-  )
-}
+    return success(
+      res,
+      { users, total },
+      "Berhasil mengambil semua user"
+    );
+  } catch (err: any) {
+    return error(res, err.message);
+  }
+};
 
 
+// ==================================================
+// GET USER BY ID
+// ==================================================
 
-export const remove = (req: Request, res: Response) => {
-    
-    const deleted = deleteUser(req.params.id!)
-    
-    successResponse(
-        res,
-        "user delete",
-        deleted
-    )
-}
+export const getUserByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = await userService.getUserByid(req.params.id!);
+
+    return success(
+      res,
+      user,
+      "User ditemukan"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 404);
+  }
+};
+
+
+// ==================================================
+// SEARCH USER
+// ==================================================
+
+export const searchUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { name, city, min_age, max_age } = req.query;
+
+    const users = await userService.searchUser(
+      name as string | undefined,
+      city as string | undefined,
+      min_age ? Number(min_age) : undefined,
+      max_age ? Number(max_age) : undefined
+    );
+
+    return success(
+      res,
+      { users, total: users.length },
+      "Hasil pencarian user"
+    );
+  } catch (err: any) {
+    return error(res, err.message);
+  }
+};
+
+
+// ==================================================
+// CREATE USER
+// ==================================================
+
+export const createUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = await userService.createUser(req.body);
+
+    return success(
+      res,
+      user,
+      "User berhasil dibuat",
+      201
+    );
+  } catch (err: any) {
+    return error(res, err.message, 400);
+  }
+};
+
+
+// ==================================================
+// UPDATE USER
+// ==================================================
+
+export const updateUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = await userService.updateUser(
+      req.params.id!,
+      req.body
+    );
+
+    return success(
+      res,
+      user,
+      "User berhasil diupdate"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 400);
+  }
+};
+
+
+// ==================================================
+// DELETE USER (SOFT DELETE)
+// ==================================================
+
+export const deleteUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = await userService.deleteUser(req.params.id!);
+
+    return success(
+      res,
+      user,
+      "User berhasil dihapus"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 404);
+  }
+};

@@ -1,0 +1,13 @@
+model Book {
+  id        Int       @id @default(autoincrement())
+  title     String
+  author    String
+  stock     Int
+
+  userId    Int?
+  user      User?     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // 👈 soft delete
+}

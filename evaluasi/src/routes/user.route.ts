@@ -1,23 +1,38 @@
 import { Router } from "express";
-import { create, getAll, getById, remove, search, update } from "../controller/user.controller";
+import {
+  getAllUsersController,
+  getUserByIdController,
+  searchUserController,
+  createUserController,
+  updateUserController,
+  deleteUserController,
+} from "../controller/user.controller";
 import { createUserValidation, getUserByIdValidation, validate } from "../middleware/user.validasion";
 
-
-const router = Router()
-
-router.get('/', getAll)
-
-router.get('/search', search)
-
-router.get('/:id', validate(getUserByIdValidation), getById)
-
-router.post('/',  validate(createUserValidation)    , create)
-
-router.put('/:id', update)
-
-router.delete('/:id', remove)
+const router = Router();
 
 
+// ==================================================
+// USER ROUTES
+// ==================================================
+
+// GET /users
+router.get("/", getAllUsersController);
+
+// GET /users/search?name=&city=&min_age=&max_age=
+router.get("/search", searchUserController);
+
+// GET /users/:id
+router.get("/:id", validate(getUserByIdValidation), getUserByIdController);
+
+// POST /users
+router.post("/", validate(createUserValidation), createUserController);
+
+// PUT /users/:id
+router.put("/:id", updateUserController);
+
+// DELETE /users/:id (soft delete)
+router.delete("/:id", deleteUserController);
 
 
-export default router
+export default router;

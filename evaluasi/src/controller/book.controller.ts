@@ -1,95 +1,181 @@
 import type { Request, Response } from "express";
-import { errorResponse, successResponse } from "../utils/response";
-import { createBook, deleteBook, getAllBooks, getBookById, searchBook, updateBook } from "../services/book.services";
+import * as bookService from "../services/book.services";
 
 
+// ==================================================
+// Response Helpers
+// ==================================================
+
+const success = (
+  res: Response,
+  data: any,
+  message: string = "OK",
+  status: number = 200
+) => {
+  return res.status(status).json({
+    success: true,
+    message,
+    data,
+  });
+};
+
+const error = (
+  res: Response,
+  message: string = "Terjadi kesalahan",
+  status: number = 500
+) => {
+  return res.status(status).json({
+    success: false,
+    message,
+  });
+};
 
 
-export const getAll = (_req: Request, res: Response ) => {
-    const { books, total } = getAllBooks()
-    successResponse(
-        res, "Daftar Buku",
-        
-        {
-            jumlah: total,
-            data: books
-        }
-    )
+// ==================================================
+// GET ALL BOOKS
+// ==================================================
 
-}
+export const getAllBooksController = async (
+  _req: Request,
+  res: Response
+) => {
+  try {
+    const { books, total } = await bookService.getAllBooks();
 
-
-export const getById = (req: Request, res: Response) => {
-    if (!req.params.id) {
-        return errorResponse(
-            res,
-            "No parameter sir"
-        )
-    }
-    const book = getBookById(req.params.id!,)
-
-    successResponse(
-        res, "Book found men",
-        book
-    )
-}
+    return success(
+      res,
+      { books, total },
+      "Berhasil mengambil semua book"
+    );
+  } catch (err: any) {
+    return error(res, err.message);
+  }
+};
 
 
+// ==================================================
+// GET BOOK BY ID
+// ==================================================
 
-export const search =  (req: Request, res: Response) => {
-    const { judul, penulis } = req.query
+export const getBookByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const book = await bookService.getBookById(req.params.id!);
 
-    const result = searchBook(judul?.toString(),
-    penulis?.toString())
-
-    successResponse(
-        res,
-        'Books found',
-        result
-    )
-
-}
-
-
-export const create = (req: Request, res: Response) => {
-    const { judul, penulis, release } = req.body;
-
-    const books = createBook(judul,
-        penulis, release
-    )
-
-    
-    successResponse(
-        res,
-        "buku berasil di tambah",
-        books,
-        null,
-        201
-    )
-}
+    return success(
+      res,
+      book,
+      "Book ditemukan"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 404);
+  }
+};
 
 
-export const update = (req: Request, res: Response) => {
-   
-    const book = updateBook(req.params.id!, req.body,)
-    
-    
-  successResponse(
-    res, 
-    "update book",
-    book
-  )
-}
+// ==================================================
+// SEARCH BOOK
+// ==================================================
+
+export const searchBookController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { title, author, min_stock, max_stock } = req.query;
+
+    const books = await bookService.searchBook(
+      title as string | undefined,
+      author as string | undefined,
+      min_stock ? Number(min_stock) : undefined,
+      max_stock ? Number(max_stock) : undefined
+    );
+
+    return success(
+      res,
+      { books, total: books.length },
+      "Hasil pencarian book"
+    );
+  } catch (err: any) {
+    return error(res, err.message);
+  }
+};
 
 
+// ==================================================
+// CREATE BOOK
+// ==================================================
 
-export const remove = (req: Request, res: Response) => {
-    
-    const deleted = deleteBook(req.params.id!)
-    
-    successResponse(
-        res,
-        "Books delete",
-        deleted
-    )
-}
+export const createBookController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { title, author, stock, userId } = req.body;
+
+    const book = await bookService.createBook({
+      title,
+      author,
+      stock,
+      userId,
+    });
+
+    return success(
+      res,
+      book,
+      "Book berhasil dibuat",
+      201
+    );
+  } catch (err: any) {
+    return error(res, err.message, 400);
+  }
+};
+
+
+// ==================================================
+// UPDATE BOOK
+// ==================================================
+
+export const updateBookController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const book = await bookService.updateBook(
+      req.params.id!,
+      req.body
+    );
+
+    return success(
+      res,
+      book,
+      "Book berhasil diupdate"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 400);
+  }
+};
+
+
+// ==================================================
+// DELETE BOOK (SOFT DELETE)
+// ==================================================
+
+export const deleteBookController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const book = await bookService.deleteBook(req.params.id!);
+
+    return success(
+      res,
+      book,
+      "Book berhasil dihapus"
+    );
+  } catch (err: any) {
+    return error(res, err.message, 404);
+  }
+};

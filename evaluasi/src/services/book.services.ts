@@ -1,82 +1,147 @@
-import { books, type Books } from "../models/books.model"
+import type { Book } from "../generated/client";
+import { getPrisma } from "../prisma";
 
-export const getAllBooks = () => {
-    return { books, total: books.length }
-}
-
+const prisma = getPrisma();
 
 
-export const getBookById = (id: string) => {
-    const numId = parseInt(id)
-    const book = books.find(b => b.id === numId);
+// ==================================================
+// GET ALL BOOKS
+// ==================================================
+export const getAllBooks = async (): Promise<{ books: Book[]; total: number }> => {
+  const books = await prisma.book.findMany({
+    where: {
+      deletedAt: null,
+    },
+    include: {
+      user: true,
+    },
+  });
 
-    if (!book) {
-        throw new Error("Not found book")
-    }
-    return book
-
-}
-
-
-export const searchBook = (judul?: string, penulis?: string) => {
-    let result = books;
-
-    if (judul) {
-        result = result.filter(b =>
-            b.judul.toLowerCase().includes(judul.toLowerCase())
-        );
-    }
-
-    if (penulis) {
-        result = result.filter(b =>
-            b.penulis.toLowerCase().trim() === penulis.toLowerCase().trim()
-        );
-    }
-
-    return result;
-}
+  return {
+    books,
+    total: books.length,
+  };
+};
 
 
+// ==================================================
+// GET BOOK BY ID
+// ==================================================
+export const getBookById = async (id: string): Promise<Book> => {
+  const numId = Number(id);
 
-export const createBook = (judul: string,
-    penulis: string, release: number) => {
+  const book = await prisma.book.findUnique({
+    where: { id: numId },
+    include: { user: true },
+  });
 
-    const newBook: Books = {
-        id: books.length + 1,
-        judul,
-        penulis,
-        release
-    };
-    books.push(newBook);
+  if (!book || book.deletedAt !== null) {
+    throw new Error("Book tidak ditemukan");
+  }
 
-    return books
-}
-
-
-
-export const updateBook = (id: string, data: any) => {
-    const numId = parseInt(id)
-    const index = books.findIndex(b => b.id === numId)
-
-    if (index === -1) {
-        throw new Error("buku tidak di temukan")
-    }
-    books[index] = { ...books[index], ...data }
-    return books[index]
-}
+  return book;
+};
 
 
+// ==================================================
+// SEARCH BOOK
+// ==================================================
+export const searchBook = async (
+  title?: string,
+  author?: string,
+  min_stock?: number,
+  max_stock?: number
+): Promise<Book[]> => {
+  return await prisma.book.findMany({
+    where: {
+      deletedAt: null,
+
+      ...(title && {
+        title: {
+          contains: title,
+          mode: "insensitive",
+        },
+      }),
+
+      ...(author && {
+        author: {
+          contains: author,
+          mode: "insensitive",
+        },
+      }),
+
+      ...(min_stock || max_stock
+        ? {
+            stock: {
+              ...(min_stock && { gte: min_stock }),
+              ...(max_stock && { lte: max_stock }),
+            },
+          }
+        : {}),
+    },
+    include: {
+      user: true,
+    },
+  });
+};
 
 
-export const deleteBook = (id: string) => {
-    const numId = parseInt(id);
-    const index = books.findIndex(s => s.id === numId);
+// ==================================================
+// CREATE BOOK
+// ==================================================
+export const createBook = async (data: {
+  title: string;
+  author: string;
+  stock: number;
+  userId?: number;
+}): Promise<Book> => {
+  return await prisma.book.create({
+    data: {
+      title: data.title,
+      author: data.author,
+      stock: data.stock,
+    },
+  });
+};
 
 
-    if (index === -1) {
-        throw new Error, "Book success delete"
-    }
-    const deleted = books.splice(index, 1)
+// ==================================================
+// UPDATE BOOK
+// ==================================================
+export const updateBook = async (
+  id: string,
+  data: Partial<Book>
+): Promise<Book> => {
+  const numId = Number(id);
 
-    return deleted
-}
+  return await prisma.book.update({
+    where: {
+      id: numId,
+      deletedAt: null,
+    },
+    data,
+  });
+};
+
+
+// ==================================================
+// DELETE BOOK (SOFT DELETE)
+// ==================================================
+export const deleteBook = async (id: string): Promise<Book> => {
+  const numId = Number(id);
+
+  const book = await prisma.book.findUnique({
+    where: { id: numId },
+  });
+
+  if (!book || book.deletedAt !== null) {
+    throw new Error("Book tidak ditemukan atau sudah dihapus");
+  }
+
+  return await prisma.book.update({
+    where: { id: numId },
+    data: {
+      deletedAt: new Date(),
+    },
+  });
+};

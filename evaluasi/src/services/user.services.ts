@@ -1,83 +1,138 @@
-import { users, type Users } from "../models/user.model"
+import type { User } from "../generated/client";
+import { getPrisma } from "../prisma";
 
-// GET ALL
-export const getAllUsers = () => {
-    return { users, total: users.length }
+const prisma = getPrisma();
+
+// ROUTE USER
+
+// GET ALL 
+export const getAllUsers = async (): Promise<{ users: User[]; total: number }> => {
+  const users = await prisma.user.findMany({
+    where: {
+      deletedAt: null,
+    },
+  });
+
+  return {
+    users,
+    total: users.length,
+  };
+};
+
+
+
+// GET ById
+export const getUserByid = async (id: string): Promise<User> => {
+  const numId = parseInt(id)
+
+  const user = await prisma.user.findUnique({
+    where: { id: numId }
+  })
+
+  if (!user || user.deletedAt !== null) {
+    throw new Error("User tidak ditemukan")
+  }
+
+  return user
+};
+
+
+
+
+
+
+// GET Search 
+export const searchUser = async (
+  name?: string,
+  city?: string,
+  min_age?: number,
+  max_age?: number
+): Promise<User[]> => {
+  return await prisma.user.findMany({
+    where: {
+      deletedAt: null,
+
+      ...(name && {
+        name: {
+          contains: name,
+          mode: "insensitive"
+        }
+      }),
+
+      ...(city && {
+        city: {
+          contains: city,
+          mode: "insensitive"
+        }
+      }),
+
+      ...(min_age || max_age
+        ? {
+          age: {
+            ...(min_age && { gte: min_age }),
+            ...(max_age && { lte: max_age })
+
+          }
+        }
+        : {})
+    }
+  })
 }
 
-// SEARCH USER 
-export const searchUsers = (nama: string, asal?: string) => {
 
-    let result = users;
 
-    if (nama) {
-        result = result.filter(n =>
-            n.nama.toLowerCase().includes(nama.toLowerCase())
-        );
+
+// CREATE 
+export const createUser = async (data: {
+  name: string
+  city: string
+  age: number
+}): Promise<User> => {
+  return await prisma.user.create({
+    data: {
+      name: data.name,
+      city: data.city,
+      age: data.age
     }
-
-    if (asal) {
-        result = result.filter(a =>
-            a.asal.toLowerCase().trim() === asal.toLowerCase().trim()
-        );
-    }
-
-    return result;
-}
-
-export const getUserById = (id: string) => {
-    const numId = parseInt(id)
-    const user = users.find(u => u.id === numId);
-
-    if (!user) {
-        throw new Error("Not found book")
-    }
-    return user
-
+  })
 }
 
 
 
-export const createUser = (nama: string,
-    asal: string, age: number) => {
+// UPDATE 
+export const updateUser = async (
+  id: string,
+  data: Partial<User>
+): Promise<User> => {
+  const numId = parseInt(id)
 
-    const newUser: Users = {
-        id: users.length + 1,
-        nama,
-        asal,
-        age
-        
-    };
-    users.push(newUser);
-
-    return users
+  return await prisma.user.update({
+    where: {
+      id: numId,
+      deletedAt: null
+    },
+    data
+  })
 }
 
 
 
-export const updateUser = (id: string, data: any) => {
-    const numId = parseInt(id)
-    const index = users.findIndex(u => u.id === numId)
+// delete 
+export const deleteUser = async (id: string): Promise<User> => {
+  const numId = parseInt(id)
 
-    if (index === -1) {
-        throw new Error("user tidak di temukan")
+  const user = await prisma.user.findUnique({
+    where: { id: numId }
+  })
+
+  if (!user || user.deletedAt !== null) {
+    throw new Error("User tidak ditemukan atau sudah dihapus")
+  }
+
+  return await prisma.user.update({
+    where: { id: numId },
+    data: {
+      deletedAt: new Date()
     }
-    users[index] = { ...users[index], ...data }
-    return users[index]
-}
-
-
-
-
-export const deleteUser = (id: string) => {
-    const numId = parseInt(id);
-    const index = users.findIndex(u => u.id === numId);
-
-
-    if (index === -1) {
-        throw new Error, "User success delete"
-    }
-    const deleted =users.splice(index, 1)
-
-    return deleted
+  })
 }

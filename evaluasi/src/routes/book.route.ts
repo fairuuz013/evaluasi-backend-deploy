@@ -1,22 +1,39 @@
 import { Router } from "express";
-import { create, getAll, getById, remove, search, update } from "../controller/book.controller";
+import {
+  getAllBooksController,
+  getBookByIdController,
+  searchBookController,
+  createBookController,
+  updateBookController,
+  deleteBookController,
+} from "../controller/book.controller";
 import { createBookValidation, getBookByIdValidation, validate } from "../middleware/book.validasion";
+import { getUserByIdValidation } from "../middleware/user.validasion";
+
+const router = Router();
 
 
-const router = Router()
+// ==================================================
+// BOOK ROUTES
+// ==================================================
 
-router.get('/', getAll)
+// GET /books
+router.get("/", getAllBooksController);
 
-router.get('/search', search)
+// GET /books/search?title=&author=&min_stock=&max_stock=
+router.get("/search", searchBookController);
 
-router.get('/:id', validate(getBookByIdValidation),  getById)
+// GET /books/:id
+router.get("/:id", validate(getBookByIdValidation), getBookByIdController);
 
-router.post('/', validate(createBookValidation), create );
+// POST /books
+router.post("/", validate(createBookValidation),  createBookController);
 
-router.put('/:id', update)
+// PUT /books/:id
+router.put("/:id", updateBookController);
 
-router.delete('/:id', remove)
+// DELETE /books/:id (soft delete)
+router.delete("/:id", deleteBookController);
 
 
-
-export default router
+export default router;

@@ -22,16 +22,16 @@ export const validate = (validations: ValidationChain[]) => {
 
 
 export  const createBookValidation = [
-  body('judul')
+  body('title')
     .trim()
     .notEmpty().withMessage('Judul buku wajib diisi')
     .isLength({ min: 3 }).withMessage('Nama Judul buku  minimal 3 karakter'),
   
-  body('penulis')
+  body('author')
     .trim()
     .notEmpty().withMessage('nama penulis wajib diisi'),
   
-  body('release')
+  body('stock')
     .isNumeric().withMessage('release harus angka ngga boleh string')
     .custom(value => value > 0).withMessage('harus sesuai tahun release')
 ];
