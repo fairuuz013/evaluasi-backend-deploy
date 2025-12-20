@@ -52,6 +52,9 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Book: 'Book',
+  BorrowItem: 'BorrowItem',
+  BorrowRecord: 'BorrowRecord',
+  Profile: 'Profile',
   User: 'User'
 } as const
 
@@ -76,7 +79,7 @@ export const BookScalarFieldEnum = {
   title: 'title',
   author: 'author',
   stock: 'stock',
-  userId: 'userId',
+  cover: 'cover',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -85,11 +88,46 @@ export const BookScalarFieldEnum = {
 export type BookScalarFieldEnum = (typeof BookScalarFieldEnum)[keyof typeof BookScalarFieldEnum]
 
 
+export const BorrowItemScalarFieldEnum = {
+  id: 'id',
+  borrowId: 'borrowId',
+  bookId: 'bookId',
+  qty: 'qty'
+} as const
+
+export type BorrowItemScalarFieldEnum = (typeof BorrowItemScalarFieldEnum)[keyof typeof BorrowItemScalarFieldEnum]
+
+
+export const BorrowRecordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type BorrowRecordScalarFieldEnum = (typeof BorrowRecordScalarFieldEnum)[keyof typeof BorrowRecordScalarFieldEnum]
+
+
+export const ProfileScalarFieldEnum = {
+  id: 'id',
+  gender: 'gender',
+  address: 'address',
+  profile_picture_url: 'profile_picture_url',
+  name: 'name',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProfileScalarFieldEnum = (typeof ProfileScalarFieldEnum)[keyof typeof ProfileScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  city: 'city',
-  age: 'age',
+  email: 'email',
+  username: 'username',
+  password_hash: 'password_hash',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'

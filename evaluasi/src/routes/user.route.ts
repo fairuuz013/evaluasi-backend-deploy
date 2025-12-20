@@ -2,37 +2,33 @@ import { Router } from "express";
 import {
   getAllUsersController,
   getUserByIdController,
-  searchUserController,
   createUserController,
-  updateUserController,
+  updateMyProfileController,
   deleteUserController,
 } from "../controller/user.controller";
-import { createUserValidation, getUserByIdValidation, validate } from "../middleware/user.validasion";
+
+import { authenticate } from "../middleware/auth.middleware";
+import { adminOnly } from "../middleware/admin.middleware";
 
 const router = Router();
 
+// ==============================
+// ROOT: /api/users
+// ==============================
 
-// ==================================================
-// USER ROUTES
-// ==================================================
+// ADMIN → lihat semua user
+router.get("/", authenticate, adminOnly, getAllUsersController);
 
-// GET /users
-router.get("/", getAllUsersController);
+// MEMBER / ADMIN → lihat user by id
+router.get("/:id", authenticate, getUserByIdController);
 
-// GET /users/search?name=&city=&min_age=&max_age=
-router.get("/search", searchUserController);
+// REGISTER (optional kalau auth dipisah)
+router.post("/", createUserController);
 
-// GET /users/:id
-router.get("/:id", validate(getUserByIdValidation), getUserByIdController);
+// MEMBER → update profile sendiri
+router.put("/me/profile", authenticate, updateMyProfileController);
 
-// POST /users
-router.post("/", validate(createUserValidation), createUserController);
-
-// PUT /users/:id
-router.put("/:id", updateUserController);
-
-// DELETE /users/:id (soft delete)
-router.delete("/:id", deleteUserController);
-
+// ADMIN → soft delete user
+router.delete("/:id", authenticate, adminOnly, deleteUserController);
 
 export default router;

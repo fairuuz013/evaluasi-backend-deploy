@@ -385,6 +385,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Book: 'Book',
+  BorrowItem: 'BorrowItem',
+  BorrowRecord: 'BorrowRecord',
+  Profile: 'Profile',
   User: 'User'
 } as const
 
@@ -401,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "book" | "user"
+    modelProps: "book" | "borrowItem" | "borrowRecord" | "profile" | "user"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -476,6 +479,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.BookCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.BookCountAggregateOutputType> | number
+        }
+      }
+    }
+    BorrowItem: {
+      payload: Prisma.$BorrowItemPayload<ExtArgs>
+      fields: Prisma.BorrowItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BorrowItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BorrowItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        findFirst: {
+          args: Prisma.BorrowItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BorrowItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        findMany: {
+          args: Prisma.BorrowItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>[]
+        }
+        create: {
+          args: Prisma.BorrowItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        createMany: {
+          args: Prisma.BorrowItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BorrowItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>[]
+        }
+        delete: {
+          args: Prisma.BorrowItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        update: {
+          args: Prisma.BorrowItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.BorrowItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BorrowItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BorrowItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.BorrowItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowItemPayload>
+        }
+        aggregate: {
+          args: Prisma.BorrowItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBorrowItem>
+        }
+        groupBy: {
+          args: Prisma.BorrowItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BorrowItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BorrowItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BorrowItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    BorrowRecord: {
+      payload: Prisma.$BorrowRecordPayload<ExtArgs>
+      fields: Prisma.BorrowRecordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BorrowRecordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BorrowRecordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        findFirst: {
+          args: Prisma.BorrowRecordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BorrowRecordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        findMany: {
+          args: Prisma.BorrowRecordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>[]
+        }
+        create: {
+          args: Prisma.BorrowRecordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        createMany: {
+          args: Prisma.BorrowRecordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BorrowRecordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>[]
+        }
+        delete: {
+          args: Prisma.BorrowRecordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        update: {
+          args: Prisma.BorrowRecordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        deleteMany: {
+          args: Prisma.BorrowRecordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BorrowRecordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BorrowRecordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>[]
+        }
+        upsert: {
+          args: Prisma.BorrowRecordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BorrowRecordPayload>
+        }
+        aggregate: {
+          args: Prisma.BorrowRecordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBorrowRecord>
+        }
+        groupBy: {
+          args: Prisma.BorrowRecordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BorrowRecordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BorrowRecordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BorrowRecordCountAggregateOutputType> | number
+        }
+      }
+    }
+    Profile: {
+      payload: Prisma.$ProfilePayload<ExtArgs>
+      fields: Prisma.ProfileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProfileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProfileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        findFirst: {
+          args: Prisma.ProfileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProfileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        findMany: {
+          args: Prisma.ProfileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>[]
+        }
+        create: {
+          args: Prisma.ProfileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        createMany: {
+          args: Prisma.ProfileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProfileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>[]
+        }
+        delete: {
+          args: Prisma.ProfileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        update: {
+          args: Prisma.ProfileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        deleteMany: {
+          args: Prisma.ProfileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProfileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProfileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>[]
+        }
+        upsert: {
+          args: Prisma.ProfileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilePayload>
+        }
+        aggregate: {
+          args: Prisma.ProfileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProfile>
+        }
+        groupBy: {
+          args: Prisma.ProfileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProfileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfileCountAggregateOutputType> | number
         }
       }
     }
@@ -597,7 +822,7 @@ export const BookScalarFieldEnum = {
   title: 'title',
   author: 'author',
   stock: 'stock',
-  userId: 'userId',
+  cover: 'cover',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -606,11 +831,46 @@ export const BookScalarFieldEnum = {
 export type BookScalarFieldEnum = (typeof BookScalarFieldEnum)[keyof typeof BookScalarFieldEnum]
 
 
+export const BorrowItemScalarFieldEnum = {
+  id: 'id',
+  borrowId: 'borrowId',
+  bookId: 'bookId',
+  qty: 'qty'
+} as const
+
+export type BorrowItemScalarFieldEnum = (typeof BorrowItemScalarFieldEnum)[keyof typeof BorrowItemScalarFieldEnum]
+
+
+export const BorrowRecordScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type BorrowRecordScalarFieldEnum = (typeof BorrowRecordScalarFieldEnum)[keyof typeof BorrowRecordScalarFieldEnum]
+
+
+export const ProfileScalarFieldEnum = {
+  id: 'id',
+  gender: 'gender',
+  address: 'address',
+  profile_picture_url: 'profile_picture_url',
+  name: 'name',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProfileScalarFieldEnum = (typeof ProfileScalarFieldEnum)[keyof typeof ProfileScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  city: 'city',
-  age: 'age',
+  email: 'email',
+  username: 'username',
+  password_hash: 'password_hash',
+  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -800,6 +1060,9 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   book?: Prisma.BookOmit
+  borrowItem?: Prisma.BorrowItemOmit
+  borrowRecord?: Prisma.BorrowRecordOmit
+  profile?: Prisma.ProfileOmit
   user?: Prisma.UserOmit
 }
 

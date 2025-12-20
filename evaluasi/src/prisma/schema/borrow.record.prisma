@@ -1,0 +1,10 @@
+model BorrowRecord {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  status String @default("BORROWED")
+
+  user   User @relation(fields: [userId], references: [id])
+  items  BorrowItem[]
+
+  createdAt DateTime @default(now())
+}

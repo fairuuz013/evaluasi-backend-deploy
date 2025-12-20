@@ -45,6 +45,21 @@ export { Prisma }
  */
 export type Book = Prisma.BookModel
 /**
+ * Model BorrowItem
+ * 
+ */
+export type BorrowItem = Prisma.BorrowItemModel
+/**
+ * Model BorrowRecord
+ * 
+ */
+export type BorrowRecord = Prisma.BorrowRecordModel
+/**
+ * Model Profile
+ * 
+ */
+export type Profile = Prisma.ProfileModel
+/**
  * Model User
  * 
  */

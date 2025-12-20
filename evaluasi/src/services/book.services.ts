@@ -1,39 +1,78 @@
 import type { Book } from "../generated/client";
-import { getPrisma } from "../prisma";
-
-const prisma = getPrisma();
+import * as bookRepo from "../repositories/book.repository";
 
 
-// ==================================================
-// GET ALL BOOKS
-// ==================================================
-export const getAllBooks = async (): Promise<{ books: Book[]; total: number }> => {
-  const books = await prisma.book.findMany({
-    where: {
-      deletedAt: null,
-    },
-    include: {
-      user: true,
-    },
+
+
+
+
+interface FindAllBookParams {
+  page: number;
+  limit: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+interface BookListResponse {
+  books: Book[];
+  total: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export const getAllBooks = async (
+  params: FindAllBookParams
+): Promise<BookListResponse> => {
+  const { page, limit, search, sortBy, sortOrder } = params;
+
+  const skip = (page - 1) * limit;
+
+  const whereClause: Prisma.BookWhereInput = {
+    deletedAt: null,
+    ...(search && {
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { author: { contains: search, mode: "insensitive" } },
+      ],
+    }),
+  };
+
+  const orderBy: Prisma.BookOrderByWithRelationInput =
+    sortBy
+      ? { [sortBy]: sortOrder ?? "desc" }
+      : { createdAt: "desc" };
+
+  const total = await bookRepo.countBooks(whereClause);
+
+  const books = await bookRepo.findAllBooks({
+    skip,
+    take: limit,
+    where: whereClause,
+    orderBy,
   });
 
   return {
     books,
-    total: books.length,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
   };
 };
 
 
-// ==================================================
-// GET BOOK BY ID
-// ==================================================
-export const getBookById = async (id: string): Promise<Book> => {
-  const numId = Number(id);
 
-  const book = await prisma.book.findUnique({
-    where: { id: numId },
-    include: { user: true },
-  });
+
+
+
+export const getBookById = async (id: string): Promise<Book> => {
+  const bookId = Number(id);
+
+  if (isNaN(bookId)) {
+    throw new Error("ID tidak valid");
+  }
+
+  const book = await bookRepo.findBookById(bookId);
 
   if (!book || book.deletedAt !== null) {
     throw new Error("Book tidak ditemukan");
@@ -42,106 +81,74 @@ export const getBookById = async (id: string): Promise<Book> => {
   return book;
 };
 
+export const searchBooks = async (query: any) => {
+  const { title, author, min_stock, max_stock } = query;
 
-// ==================================================
-// SEARCH BOOK
-// ==================================================
-export const searchBook = async (
-  title?: string,
-  author?: string,
-  min_stock?: number,
-  max_stock?: number
-): Promise<Book[]> => {
-  return await prisma.book.findMany({
-    where: {
-      deletedAt: null,
+  const filter: any = {};
 
-      ...(title && {
-        title: {
-          contains: title,
-          mode: "insensitive",
-        },
-      }),
+  if (title) {
+    filter.title = {
+      contains: String(title),
+      mode: "insensitive",
+    };
+  }
 
-      ...(author && {
-        author: {
-          contains: author,
-          mode: "insensitive",
-        },
-      }),
+  if (author) {
+    filter.author = {
+      contains: String(author),
+      mode: "insensitive",
+    };
+  }
 
-      ...(min_stock || max_stock
-        ? {
-            stock: {
-              ...(min_stock && { gte: min_stock }),
-              ...(max_stock && { lte: max_stock }),
-            },
-          }
-        : {}),
-    },
-    include: {
-      user: true,
-    },
-  });
+  if (min_stock || max_stock) {
+    filter.stock = {
+      ...(min_stock && { gte: Number(min_stock) }),
+      ...(max_stock && { lte: Number(max_stock) }),
+    };
+  }
+
+  const books = await bookRepo.searchBooks(filter);
+
+  return {
+    books,
+    total: books.length,
+  };
 };
-
-
-// ==================================================
-// CREATE BOOK
-// ==================================================
 export const createBook = async (data: {
   title: string;
   author: string;
   stock: number;
-  userId?: number;
-}): Promise<Book> => {
-  return await prisma.book.create({
-    data: {
-      title: data.title,
-      author: data.author,
-      stock: data.stock,
-    },
-  });
+}) => {
+  if (data.stock < 0) {
+    throw new Error("Stock tidak boleh negatif");
+  }
+
+  return bookRepo.createBook(data);
 };
 
-
-// ==================================================
-// UPDATE BOOK
-// ==================================================
 export const updateBook = async (
   id: string,
   data: Partial<Book>
-): Promise<Book> => {
-  const numId = Number(id);
+) => {
+  const bookId = Number(id);
 
-  return await prisma.book.update({
-    where: {
-      id: numId,
-      deletedAt: null,
-    },
-    data,
-  });
+  const book = await bookRepo.findBookById(bookId);
+
+  if (!book || book.deletedAt !== null) {
+    throw new Error("Book tidak ditemukan");
+  }
+
+  return bookRepo.updateBookById(bookId, data);
 };
 
+export const deleteBook = async (id: string) => {
+  const bookId = Number(id);
 
-// ==================================================
-// DELETE BOOK (SOFT DELETE)
-// ==================================================
-export const deleteBook = async (id: string): Promise<Book> => {
-  const numId = Number(id);
-
-  const book = await prisma.book.findUnique({
-    where: { id: numId },
-  });
+  const book = await bookRepo.findBookById(bookId);
 
   if (!book || book.deletedAt !== null) {
     throw new Error("Book tidak ditemukan atau sudah dihapus");
   }
 
-  return await prisma.book.update({
-    where: { id: numId },
-    data: {
-      deletedAt: new Date(),
-    },
-  });
+  return bookRepo.softDeleteBook(bookId);
 };

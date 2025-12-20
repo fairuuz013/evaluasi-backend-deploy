@@ -1,17 +1,10 @@
-import type { User } from "../generated/client";
-import { getPrisma } from "../prisma";
+import * as userRepo from "../repositories/user.repository";
 
-const prisma = getPrisma();
-
-// ROUTE USER
-
-// GET ALL 
-export const getAllUsers = async (): Promise<{ users: User[]; total: number }> => {
-  const users = await prisma.user.findMany({
-    where: {
-      deletedAt: null,
-    },
-  });
+// ==============================
+// GET ALL USERS (ADMIN)
+// ==============================
+export const getAllUsers = async () => {
+  const users = await userRepo.findAllUsers();
 
   return {
     users,
@@ -19,120 +12,80 @@ export const getAllUsers = async (): Promise<{ users: User[]; total: number }> =
   };
 };
 
-
-
-// GET ById
-export const getUserByid = async (id: string): Promise<User> => {
-  const numId = parseInt(id)
-
-  const user = await prisma.user.findUnique({
-    where: { id: numId }
-  })
-
-  if (!user || user.deletedAt !== null) {
-    throw new Error("User tidak ditemukan")
+// ==============================
+// GET USER BY ID
+// ==============================
+export const getUserById = async (id: string) => {
+  const userId = Number(id);
+  if (isNaN(userId)) {
+    throw new Error("ID user tidak valid");
   }
 
-  return user
+  const user = await userRepo.findUserById(userId);
+
+  if (!user || user.deletedAt) {
+    throw new Error("User tidak ditemukan");
+  }
+
+  return user;
 };
 
 
-
-
-
-
-// GET Search 
-export const searchUser = async (
-  name?: string,
-  city?: string,
-  min_age?: number,
-  max_age?: number
-): Promise<User[]> => {
-  return await prisma.user.findMany({
-    where: {
-      deletedAt: null,
-
-      ...(name && {
-        name: {
-          contains: name,
-          mode: "insensitive"
-        }
-      }),
-
-      ...(city && {
-        city: {
-          contains: city,
-          mode: "insensitive"
-        }
-      }),
-
-      ...(min_age || max_age
-        ? {
-          age: {
-            ...(min_age && { gte: min_age }),
-            ...(max_age && { lte: max_age })
-
-          }
-        }
-        : {})
-    }
-  })
-}
-
-
-
-
-// CREATE 
+// ==============================
+// CREATE USER (REGISTER)
+// ==============================
 export const createUser = async (data: {
-  name: string
-  city: string
-  age: number
-}): Promise<User> => {
-  return await prisma.user.create({
-    data: {
-      name: data.name,
-      city: data.city,
-      age: data.age
-    }
-  })
-}
-
-
-
-// UPDATE 
-export const updateUser = async (
-  id: string,
-  data: Partial<User>
-): Promise<User> => {
-  const numId = parseInt(id)
-
-  return await prisma.user.update({
-    where: {
-      id: numId,
-      deletedAt: null
-    },
-    data
-  })
-}
-
-
-
-// delete 
-export const deleteUser = async (id: string): Promise<User> => {
-  const numId = parseInt(id)
-
-  const user = await prisma.user.findUnique({
-    where: { id: numId }
-  })
-
-  if (!user || user.deletedAt !== null) {
-    throw new Error("User tidak ditemukan atau sudah dihapus")
+  email: string;
+  username: string;
+  password_hash: string;
+  role?: string;
+  profile: {
+    name: string;
+    address: string;
+    gender: string;
+    profile_picture_url?: string | null;
+  };
+}) => {
+  if (!data.email || !data.password_hash) {
+    throw new Error("Email dan password wajib diisi");
   }
 
-  return await prisma.user.update({
-    where: { id: numId },
-    data: {
-      deletedAt: new Date()
-    }
-  })
-}
+  return userRepo.createUser({
+    email: data.email,
+    username: data.username,
+    password_hash: data.password_hash,
+    role: data.role || "MEMBER",
+    profile: data.profile,
+  });
+};
+
+// ==============================
+// UPDATE USER PROFILE (MEMBER)
+// ==============================
+export const updateMyProfile = async (
+  userId: number,
+  data: {
+    name?: string;
+    address?: string;
+    gender?: string;
+    profile_picture_url?: string | null;
+  }
+) => {
+  if (!data || Object.keys(data).length === 0) {
+    throw new Error("Tidak ada data untuk diupdate");
+  }
+
+  return userRepo.updateUserProfile(userId, data);
+};
+
+// ==============================
+// SOFT DELETE USER (ADMIN)
+// ==============================
+export const deleteUser = async (id: string) => {
+  const userId = Number(id);
+  if (isNaN(userId)) {
+    throw new Error("ID user tidak valid");
+  }
+
+  return userRepo.softDeleteUser(userId);
+};

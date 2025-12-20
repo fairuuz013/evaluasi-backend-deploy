@@ -1,8 +1,11 @@
 import express from "express";
 import { successResponse } from "./utils/response";
 import bookRouter from "./routes/book.route";
+import authRoute from "./routes/auth.route";
 import userRouter from "./routes/user.route";
 import { errorHandler } from "./middleware/error.handler";
+
+
 
 const app = express();
 
@@ -21,6 +24,8 @@ app.get("/", (_req, res) => {
 // =====================
 // ROUTES
 // =====================
+
+app.use("/api/auth", authRoute);
 app.use("/api/users", userRouter);
 app.use("/api/books", bookRouter);
 
