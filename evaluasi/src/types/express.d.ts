@@ -7,7 +7,7 @@ declare global {
             apiKey?: string
             user?: {
                 id: number;
-                role: string;
+                role?: string;
             }
         }
     }

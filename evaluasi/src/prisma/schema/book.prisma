@@ -1,9 +1,10 @@
 model Book {
-  id     Int    @id @default(autoincrement())
-  title  String
-  author String
-  stock  Int
-  cover  String?
+  id            Int    @id @default(autoincrement())
+  title         String
+  author        String
+  stock         Int
+  cover         String?
+  publishedYear Int?   // ⬅️ baru
 
   borrowItems BorrowItem[]
 

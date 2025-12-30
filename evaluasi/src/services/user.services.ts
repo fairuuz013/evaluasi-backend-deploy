@@ -1,91 +1,25 @@
-import * as userRepo from "../repositories/user.repository";
+import type { IUserRepository } from "../repository/user.repository"
 
-// ==============================
-// GET ALL USERS (ADMIN)
-// ==============================
-export const getAllUsers = async () => {
-  const users = await userRepo.findAllUsers();
+export interface IUserService {
+  getMe(userId: number): Promise<any>
+  listUsers(): Promise<any[]>
+  deleteUser(id: string): Promise<any>
+}
 
-  return {
-    users,
-    total: users.length,
-  };
-};
+export class UserServices implements IUserService {
+  constructor(private userRepo: IUserRepository) {}
 
-// ==============================
-// GET USER BY ID
-// ==============================
-export const getUserById = async (id: string) => {
-  const userId = Number(id);
-  if (isNaN(userId)) {
-    throw new Error("ID user tidak valid");
+  async getMe(userId: number) {
+    const user = await this.userRepo.findById(userId)
+    if (!user) throw new Error("User tidak ditemukan")
+    return user
   }
 
-  const user = await userRepo.findUserById(userId);
-
-  if (!user || user.deletedAt) {
-    throw new Error("User tidak ditemukan");
+  async listUsers() {
+    return this.userRepo.findAll()
   }
 
-  return user;
-};
-
-
-// ==============================
-// CREATE USER (REGISTER)
-// ==============================
-export const createUser = async (data: {
-  email: string;
-  username: string;
-  password_hash: string;
-  role?: string;
-  profile: {
-    name: string;
-    address: string;
-    gender: string;
-    profile_picture_url?: string | null;
-  };
-}) => {
-  if (!data.email || !data.password_hash) {
-    throw new Error("Email dan password wajib diisi");
+  async deleteUser(id: string) {
+    return this.userRepo.softDelete(Number(id))
   }
-
-  return userRepo.createUser({
-    email: data.email,
-    username: data.username,
-    password_hash: data.password_hash,
-    role: data.role || "MEMBER",
-    profile: data.profile,
-  });
-};
-
-// ==============================
-// UPDATE USER PROFILE (MEMBER)
-// ==============================
-export const updateMyProfile = async (
-  userId: number,
-  data: {
-    name?: string;
-    address?: string;
-    gender?: string;
-    profile_picture_url?: string | null;
-  }
-) => {
-  if (!data || Object.keys(data).length === 0) {
-    throw new Error("Tidak ada data untuk diupdate");
-  }
-
-  return userRepo.updateUserProfile(userId, data);
-};
-
-// ==============================
-// SOFT DELETE USER (ADMIN)
-// ==============================
-export const deleteUser = async (id: string) => {
-  const userId = Number(id);
-  if (isNaN(userId)) {
-    throw new Error("ID user tidak valid");
-  }
-
-  return userRepo.softDeleteUser(userId);
-};
+}

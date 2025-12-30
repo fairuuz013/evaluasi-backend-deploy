@@ -1,0 +1,81 @@
+model Book {
+  id            Int     @id @default(autoincrement())
+  title         String
+  author        String
+  stock         Int
+  cover         String?
+  publishedYear Int? // ⬅️ baru
+
+  borrowItems BorrowItem[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model BorrowItem {
+  id       Int @id @default(autoincrement())
+  borrowId Int
+  bookId   Int
+  qty      Int
+
+  borrow BorrowRecord @relation(fields: [borrowId], references: [id])
+  book   Book         @relation(fields: [bookId], references: [id])
+}
+
+model BorrowRecord {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  status String @default("BORROWED")
+
+  user  User         @relation(fields: [userId], references: [id])
+  items BorrowItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model Profile {
+  id                  Int     @id @default(autoincrement())
+  gender              String
+  address             String
+  profile_picture_url String?
+  name                String
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model User {
+  id            Int     @id @default(autoincrement())
+  email         String  @unique
+  username      String? @unique
+  password_hash String
+  role          String? @default("MEMBER")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  profile       Profile?
+  borrowRecords BorrowRecord[]
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}

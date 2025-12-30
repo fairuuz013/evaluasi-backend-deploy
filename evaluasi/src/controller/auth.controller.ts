@@ -1,38 +1,20 @@
 import type { Request, Response } from "express";
-import * as authService from "../services/auth.service";
-import { successResponse, errorResponse } from "../utils/response";
+import { successResponse } from "../utils/response";
+import { AuthService } from "../services/auth.service";
 
-// ==============================
-// REGISTER
-// ==============================
-export const registerController = async (req: Request, res: Response) => {
-    try {
-        const user = await authService.register(req.body);
-        return successResponse(res,
-            "Register berhasil",
-            user,
-            null,
-            201
-        );
-    } catch (err: any) {
-        return errorResponse(res, err.message, 400);
-    }
-};
+export class AuthController {
+  constructor(private authService: AuthService) {}
 
-// ==============================
-// LOGIN
-// ==============================
-export const loginController = async (req: Request, res: Response) => {
-    try {
-        const result = await authService.login(req.body);
-        return successResponse(
-            res,
-            "Login berhasil",
-            result,
-            null,
-            201
-        );
-    } catch (err: any) {
-        return errorResponse(res, err.message, 401);
-    }
-};
+  register = async (req: Request, res: Response) => {
+    const user = await this.authService.register(req.body);
+    successResponse(res, "Register berhasil", user, null, 201);
+  };
+
+  login = async (req: Request, res: Response) => {
+    const result = await this.authService.login(
+      req.body.email,
+      req.body.password
+    );
+    successResponse(res, "Login berhasil", result);
+  };
+}

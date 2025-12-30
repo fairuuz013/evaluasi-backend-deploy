@@ -1,79 +1,85 @@
-import type { Request, Response } from "express";
-import { successResponse, errorResponse } from "../utils/response";
-import * as borrowService from "../services/borrow.services";
+// controller/borrow.controller.ts
+import type { Request, Response } from "express"
+import { successResponse } from "../utils/response"
+import type { IBorrowService } from "../services/borrow.services"
 
-export const borrowBooks = async (req: Request, res: Response) => {
-  try {
-    const user = req.user!;
-    const { items } = req.body;
-
-    const borrow = await borrowService.borrowBooks(user.id, items);
-
-    successResponse(res, "Buku berhasil dipinjam", borrow, null, 201);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+export class BorrowController {
+  constructor(private borrowService: IBorrowService) {
+    this.list = this.list.bind(this)
+    this.getById = this.getById.bind(this)
+    this.borrow = this.borrow.bind(this)
+    this.returnBorrow = this.returnBorrow.bind(this)
   }
-};
 
-export const returnBorrow = async (req: Request, res: Response) => {
-  try {
-    const borrowId = Number(req.params.id);
+  async list(req: Request, res: Response) {
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 10
 
-    const result = await borrowService.returnBorrow(borrowId);
+  const filters: {
+    status?: "BORROWED" | "RETURNED"
+    memberName?: string
+    startDate?: Date
+    endDate?: Date
+  } = {}
 
-    successResponse(res, "Buku berhasil dikembalikan", result);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+  // status
+  if (
+    req.query.status === "BORROWED" ||
+    req.query.status === "RETURNED"
+  ) {
+    filters.status = req.query.status
   }
-};
 
-export const getMyBorrows = async (req: Request, res: Response) => {
-  try {
-    const user = req.user!;
-
-    const borrows = await borrowService.getBorrowsByUserId(user.id);
-
-    successResponse(res, "Riwayat peminjaman berhasil diambil", borrows);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+  // member name
+  if (typeof req.query.memberName === "string") {
+    filters.memberName = req.query.memberName
   }
-};
 
-export const getBorrowById = async (req: Request, res: Response) => {
-  try {
-    const borrowId = Number(req.params.id);
-    const user = req.user!;
-
-    const borrow = await borrowService.getBorrowById(
-      borrowId,
-      user.id,
-      user.role
-    );
-
-    successResponse(res, "Detail peminjaman berhasil diambil", borrow);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+  // start date
+  if (req.query.startDate) {
+    const d = new Date(req.query.startDate as string)
+    if (!isNaN(d.getTime())) {
+      filters.startDate = d
+    }
   }
-};
 
-export const getAllBorrows = async (_req: Request, res: Response) => {
-  try {
-    const borrows = await borrowService.getAllBorrows();
-
-    successResponse(res, "Semua data peminjaman berhasil diambil", borrows);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+  // end date
+  if (req.query.endDate) {
+    const d = new Date(req.query.endDate as string)
+    if (!isNaN(d.getTime())) {
+      filters.endDate = d
+    }
   }
-};
 
-export const deleteBorrow = async (req: Request, res: Response) => {
-  try {
-    const borrowId = Number(req.params.id);
+  const result = await this.borrowService.list({
+    page,
+    limit,
+    filters
+  })
 
-    const deleted = await borrowService.deleteBorrow(borrowId);
+  successResponse(res, "Data peminjaman berhasil diambil", result.borrows, {
+    page: result.currentPage,
+    limit,
+    total: result.total
+  })
+}
 
-    successResponse(res, "Peminjaman berhasil dihapus", deleted);
-  } catch (err: any) {
-    errorResponse(res, err.message);
+  async getById(req: Request, res: Response) {
+    const data = await this.borrowService.getById(req.params.id!)
+    successResponse(res, "Detail peminjaman", data, null, 201)
   }
-};
+
+  async borrow(req: Request, res: Response) {
+    const userId = req.user!.id
+    const items = req.body.items
+
+    const data = await this.borrowService.borrow(userId, items)
+
+    successResponse(res, "Peminjaman berhasil", data, null, 201)
+  }
+
+  async returnBorrow(req: Request, res: Response) {
+    const data = await this.borrowService.returnBorrow(req.params.id!)
+    successResponse(res, "Buku berhasil dikembalikan", data)
+  }
+}
